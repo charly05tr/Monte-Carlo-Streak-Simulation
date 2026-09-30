@@ -25,24 +25,74 @@ This code runs thousands of simulations to demonstrate how, due to the **Law of 
 ## 🚀 How to Run the Simulation
 
 **Prerequisites:**
-* Python 3.x installed on your system.
-* No external libraries required (uses the native `random` module).
+* Python 3.9+ installed on your system.
+* The simulation logic has no external dependencies (uses the native `random` module).
+* The web interface requires `streamlit`, `pandas` and `altair` (see `requirements.txt`).
 
-**Execution:**
+**Setup:**
 1. Clone this repository:
    ```bash
    git clone https://github.com/charly05tr/Monte-Carlo-Streak-Simulation.git
+   cd Monte-Carlo-Streak-Simulation
    ```
-2. Run the main script from the terminal:
+2. Install the dependencies:
    ```bash
-   python simulacion_monedas.py
+   pip install -r requirements.txt
    ```
+
+**Option A: Web interface (recommended)**
+
+```bash
+streamlit run app.py
+```
+
+If the `streamlit` command is not recognized, use `python -m streamlit run app.py`. The app opens in your browser at `http://localhost:8501`.
+
+> The app must be launched with `streamlit run`, not `python app.py`. Streamlit starts a web server and runs the script itself.
+
+**Option B: Command line**
+
+```bash
+python simulacion.py
+```
+
+Runs 10,000 simulations with a 12-heads streak and prints the empirical average next to the theoretical value.
+
+## 🖥️ Web Interface
+
+From the sidebar you can configure:
+* **Consecutive heads (N):** streak length, from 1 to 16 (default 12).
+* **Number of simulations:** how many times the experiment is repeated.
+* **Fixed seed:** optional, to make results reproducible.
+
+After running, the app shows:
+* **Key metrics:** simulated average (with its deviation from the theoretical value), theoretical value, median, minimum and maximum.
+* **Distribution histogram:** how many tosses each trial needed.
+* **Convergence chart:** the cumulative average approaching the theoretical value as more simulations run (Law of Large Numbers).
+* **Raw data:** a table of every result, downloadable as CSV.
+
+Both charts mark the theoretical value $2^{N+1} - 2$ with a dashed red line.
+
+> **Performance note:** with N = 12 each trial takes ~8,000 tosses, so 10,000 simulations mean ~80 million loop iterations in pure Python. This can take tens of seconds; the interface defaults to 2,000 simulations.
 
 ## 🛠️ Code Structure
 
-The script is divided into two main functions:
-* `experimento_continuo()`: Models a single trial of the experiment by tossing coins and accumulating a streak until reaching 12. Returns the total number of tosses used.
-* `simulacion_monte_carlo_continuo(num_simulaciones)`: An iterator that repeats the trial $N$ times (default is 10,000) and calculates the arithmetic mean of the results.
+The project separates the simulation logic from the presentation layer:
+
+```
+├── simulacion.py      # Simulation logic (no UI dependencies)
+├── app.py             # Streamlit web interface
+└── requirements.txt   # Interface dependencies
+```
+
+**`simulacion.py`**
+* `experimento_continuo(largo_racha, rng)`: Models a single trial by tossing coins until reaching a streak of `largo_racha` heads (default 12). Returns the total number of tosses used.
+* `simulacion_monte_carlo_continuo(num_simulaciones, largo_racha, semilla, al_progresar)`: Repeats the trial `num_simulaciones` times (default 10,000). Accepts an optional seed for reproducibility and a progress callback, so any interface can report progress without the logic depending on it.
+* `valor_esperado_teorico(largo_racha)`: Returns the exact expected value $2^{n+1} - 2$.
+* `ResultadoSimulacion`: Holds the results and exposes the average, median, minimum, maximum, theoretical value and cumulative averages.
+
+**`app.py`**
+* Reads the parameters from the UI, calls the logic in `simulacion.py` and renders the metrics and charts. It contains no simulation logic of its own.
 
 ## 📝 Conclusions
 
