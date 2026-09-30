@@ -31,7 +31,7 @@ This code runs thousands of simulations to demonstrate how, due to the **Law of 
 **Execution:**
 1. Clone this repository:
    ```bash
-   git clone [https://github.com/your-username/repo-name.git](https://github.com/your-username/repo-name.git)
+   git clone https://github.com/charly05tr/Monte-Carlo-Streak-Simulation.git
    ```
 2. Run the main script from the terminal:
    ```bash
